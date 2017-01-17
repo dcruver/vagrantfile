@@ -16,7 +16,7 @@ $linux_script = <<SCRIPT
   sudo add-apt-repository --yes ppa:andrei-pozolotin/maven3
   sudo apt-get update
   sudo apt-get install --yes maven3
-  sudo apt-get install libfontconfig1
+  sudo apt-get install --yes libfontconfig1
 SCRIPT
 
 $win_script = <<-SCRIPT
