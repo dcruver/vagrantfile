@@ -1,0 +1,4 @@
+#!/bin/bash
+
+UUID=`cat .vagrant/machines/$1/virtualbox/id`
+vboxmanage guestproperty enumerate $UUID | grep "IP" | grep -Po '(?:[0-9]{1,3}\.){3}[0-9]{1,3}'

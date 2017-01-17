@@ -9,13 +9,14 @@ $linux_script = <<SCRIPT
   sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys EEA14886
   sudo apt-get update
   sudo apt-get install --yes oracle-java8-installer
-
   sudo apt-get install --yes git
-  sudo apt-get install --yes software-properties-common
-
-  sudo add-apt-repository --yes ppa:andrei-pozolotin/maven3
-  sudo apt-get update
-  sudo apt-get install --yes maven3
+  sudo apt-get purge -y maven
+  wget http://apache.cs.utah.edu/maven/maven-3/3.3.9/binaries/apache-maven-3.3.9-bin.tar.gz
+  tar -zxf apache-maven-3.3.9-bin.tar.gz
+  sudo cp -R apache-maven-3.3.9 /usr/local
+  sudo ln -s /usr/local/apache-maven-3.3.9/bin/mvn /usr/bin/mvn
+  echo "export M2_HOME=/usr/local/apache-maven-3.3.9" >> ~/.profile
+  source ~/.profile
   sudo apt-get install --yes libfontconfig1
 SCRIPT
 
@@ -29,6 +30,7 @@ $win_script = <<-SCRIPT
   New-Item HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows -Name WindowsUpdate
   New-Item HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate -Name AU
   New-ItemProperty HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU -Name NoAutoUpdate -Value 1
+  netsh advfirewall set allprofiles state off
 
   $ChocoCommand = "$ChocoInstallPath\\choco install -y git jdk8 maven"
   iex "& $ChocoCommand"
@@ -48,12 +50,12 @@ Vagrant.configure(2) do |config|
   end
   
   config.vm.box = "ARTACK/debian-jessie"
-  
+  config.vm.network "public_network"
+ 
   (1..25).each do |i|
     config.vm.define "linux#{i}" do |lin|
       lin.vm.provision "shell", inline: $linux_script
       lin.vm.hostname = "linux#{i}.vagrant"
-      lin.vm.network "public_network"
     end
 
     config.vm.define "windows#{i}" do |win|
@@ -61,7 +63,6 @@ Vagrant.configure(2) do |config|
       win.vm.guest = :windows
       win.vm.communicator = "winrm"
       win.vm.provision "windows provision", type: "shell", privileged: true, inline: $win_script
-      win.vm.network "public_network"
     end
   end
 end
